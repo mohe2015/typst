@@ -131,13 +131,15 @@ fn compile_impl(
     let mut subsink;
     let mut document = Document::default();
 
+    let max_iter = std::env::var("__TYPST_MAX_ITER_ONLY_FOR_DEBUGGING").map(|v| v.parse::<usize>().expect("__TYPST_MAX_ITER_ONLY_FOR_DEBUGGING must not be set or be set to an integer.")).unwrap_or(5);
+
     // Relayout until all introspections stabilize.
     // If that doesn't happen within five attempts, we give up.
     loop {
         // The name of the iterations for timing scopes.
-        const ITER_NAMES: &[&str] =
-            &["layout (1)", "layout (2)", "layout (3)", "layout (4)", "layout (5)"];
-        let _scope = TimingScope::new(ITER_NAMES[iter], None);
+        const ITER_NAMES: [&str; 5] =
+            ["layout (1)", "layout (2)", "layout (3)", "layout (4)", "layout (5)"];
+        let _scope = TimingScope::new(ITER_NAMES.get(iter).copied().unwrap_or("layout (iter > 5)"), None);
 
         subsink = Sink::new();
 
@@ -159,9 +161,9 @@ fn compile_impl(
             break;
         }
 
-        if iter >= 5 {
+        if iter >= max_iter {
             subsink.warn(warning!(
-                Span::detached(), "layout did not converge within 5 attempts";
+                Span::detached(), "layout did not converge within {} attempts", max_iter;
                 hint: "check if any states or queries are updating themselves"
             ));
             break;
