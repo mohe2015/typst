@@ -159,9 +159,10 @@ fn compile_impl(
             break;
         }
 
-        if iter >= 5 {
+        let max_iter = std::env::var("__TYPST_DO_NOT_USE_MAX_ITER").unwrap_or("5").parse::<usize>().ok().expect("__TYPST_DO_NOT_USE_MAX_ITER must not be set or be set to an integer.");
+        if iter >= max_iter {
             subsink.warn(warning!(
-                Span::detached(), "layout did not converge within 5 attempts";
+                Span::detached(), "layout did not converge within {} attempts", max_iter;
                 hint: "check if any states or queries are updating themselves"
             ));
             break;
