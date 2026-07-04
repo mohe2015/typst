@@ -106,6 +106,12 @@
 // Hint: 2-20 this will become a hard error in the future
 #numbering("①", 51)
 
+--- numbering-trimmed-func eval ---
+// TODO annotate
+#let f(n, trimmed: false) = if trimmed { str(n) } else { "(" + str(n) + ")" }
+#test(numbering(f, 1), "(1)")
+#test(numbering(f, 1, trimmed: true), "1") // broken
+
 --- enum-numbering-too-high paged ---
 #set enum(numbering: "⓵")
 // Warning: 1-9 the number 11 is too large to be represented with the `arabic.oo` numeral system

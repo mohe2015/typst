@@ -605,7 +605,7 @@ impl Packed<FigureCaption> {
             &self.figure_location,
         ) {
             let numbers =
-                counter.display_at(engine, *location, styles, numbering, self.span())?;
+                counter.display_at(engine, *location, styles, numbering, self.span(), false)?;
             if !supplement.is_empty() {
                 supplement += TextElem::packed('\u{a0}');
             }

@@ -63,7 +63,7 @@ Look #link("https://github.com/typst/typst")[this #parbreak() thing].
 #link("asf", linebreak())
 
 --- issue-7301-link-tags-empty-link-body-footnote pdftags ---
-#footnote(numbering: it => "", [asdf])
+#footnote(numbering: (..) => "", [asdf])
 
 --- issue-7301-link-tags-empty-link-body-mutliple pdftags ---
 #link("asf")[#none\ #none] #link("asf")[#none\ #none]

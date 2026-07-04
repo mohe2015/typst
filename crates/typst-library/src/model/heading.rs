@@ -262,6 +262,7 @@ impl Synthesize for Packed<HeadingElem> {
                 styles,
                 numbering,
                 self.span(),
+                false,
             )
         {
             self.numbers = Some(numbers.plain_text());

@@ -115,7 +115,7 @@ pub fn layout_enum(
         let resolved = if full {
             parents.push(number);
             let content = numbering
-                .apply(engine, context.track(), item.span(), &parents)?
+                .apply(engine, context.track(), item.span(), &parents, false)?
                 .display();
             parents.pop();
             content
@@ -128,7 +128,7 @@ pub fn layout_enum(
                     number,
                 )),
                 other => other
-                    .apply(engine, context.track(), item.span(), &[number])?
+                    .apply(engine, context.track(), item.span(), &[number], false)?
                     .display(),
             }
         };

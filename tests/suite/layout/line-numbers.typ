@@ -237,7 +237,7 @@ Line 3
 
 --- line-numbers-deduplication-zero-height-number paged ---
 #set page(margin: (left: 1.5cm))
-#set par.line(numbering: n => move(dy: -0.6em, box(height: 0pt)[#n]), number-clearance: 0.5cm)
+#set par.line(numbering: (n, ..) => move(dy: -0.6em, box(height: 0pt)[#n]), number-clearance: 0.5cm)
 
 #grid(
   columns: (1fr, 1fr),

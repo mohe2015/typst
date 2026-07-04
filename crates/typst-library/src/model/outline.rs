@@ -639,7 +639,7 @@ impl OutlineEntry {
         let styles = context.styles().at(span)?;
         let numbers = outlinable
             .counter()
-            .display_at(engine, loc, styles, numbering, span)?;
+            .display_at(engine, loc, styles, numbering, span, false)?;
         Ok(Some(outlinable.prefix(numbers)))
     }
 
@@ -680,7 +680,7 @@ impl OutlineEntry {
         let numbering = engine
             .introspect(PageNumberingIntrospection(loc, span))
             .unwrap_or_else(|| NumberingPattern::from_str("1").unwrap().into());
-        Counter::new(CounterKey::Page).display_at(engine, loc, styles, &numbering, span)
+        Counter::new(CounterKey::Page).display_at(engine, loc, styles, &numbering, span, false)
     }
 }
 

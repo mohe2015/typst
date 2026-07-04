@@ -336,7 +336,7 @@ fn realize_reference(
 ) -> SourceResult<Content> {
     let span = reference.span();
     let loc = elem.location().unwrap();
-    let numbers = counter.display_at(engine, loc, styles, &numbering.trimmed(), span)?;
+    let numbers = counter.display_at(engine, loc, styles, &numbering, span, true)?;
 
     let supplement = match reference.supplement.get_ref(styles) {
         Smart::Auto => supplement,

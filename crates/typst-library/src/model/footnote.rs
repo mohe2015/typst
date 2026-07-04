@@ -146,7 +146,7 @@ impl Packed<FootnoteElem> {
         let loc = self.declaration_location(engine).at(span)?;
         let numbering = self.numbering.get_ref(styles);
         let counter = Counter::of(FootnoteElem::ELEM);
-        let num = counter.display_at(engine, loc, styles, numbering, span)?;
+        let num = counter.display_at(engine, loc, styles, numbering, span, false)?;
         let alt = FootnoteElem::alt_text(styles, &num.plain_text());
         let dest = loc.variant(1);
         Ok(DirectLinkElem::new(dest, num, Some(alt)).pack().spanned(span))
@@ -311,7 +311,7 @@ impl Packed<FootnoteEntry> {
             );
         };
 
-        let num = counter.display_at(engine, dest, styles, numbering, span)?;
+        let num = counter.display_at(engine, dest, styles, numbering, span, false)?;
         let alt = num.plain_text();
         let link = DirectLinkElem::new(dest, num, Some(alt)).pack().spanned(span);
         let sup = SuperElem::new(link).pack().spanned(span);

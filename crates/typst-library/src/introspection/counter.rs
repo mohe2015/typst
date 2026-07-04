@@ -266,11 +266,12 @@ impl Counter {
         styles: StyleChain,
         numbering: &Numbering,
         span: Span,
+        trimmed: bool,
     ) -> SourceResult<Content> {
         let context = Context::new(Some(loc), Some(styles));
         Ok(engine
             .introspect(CounterAtIntrospection(self.clone(), loc, span))?
-            .display(engine, context.track(), span, numbering)?
+            .display(engine, context.track(), span, numbering, trimmed)?
             .display())
     }
 
@@ -413,6 +414,10 @@ impl Counter {
         #[named]
         #[default(false)]
         both: bool,
+
+        #[named]
+        #[default(false)]
+        trimmed: bool,
     ) -> SourceResult<Value> {
         let location = match at {
             Smart::Auto => context.location().at(span)?,
@@ -435,9 +440,9 @@ impl Counter {
 
         if at.is_custom() {
             let context = Context::new(Some(location), context.styles().ok());
-            state.display(engine, context.track(), span, &numbering)
+            state.display(engine, context.track(), span, &numbering, trimmed)
         } else {
-            state.display(engine, context, span, &numbering)
+            state.display(engine, context, span, &numbering, trimmed)
         }
     }
 
@@ -636,8 +641,9 @@ impl CounterState {
         context: Tracked<Context>,
         span: Span,
         numbering: &Numbering,
+        trimmed: bool,
     ) -> SourceResult<Value> {
-        numbering.apply(engine, context, span, &self.0)
+        numbering.apply(engine, context, span, &self.0, trimmed)
     }
 }
 
@@ -712,6 +718,7 @@ pub const COUNTER_DISPLAY_RULE: ShowFn<CounterDisplayElem> = |elem, engine, styl
             elem.numbering.clone(),
             Smart::Auto,
             elem.both,
+            false
         )?
         .display())
 };

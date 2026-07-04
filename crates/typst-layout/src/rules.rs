@@ -258,7 +258,7 @@ const HEADING_RULE: ShowFn<HeadingElem> = |elem, engine, styles| {
     if let Some(numbering) = elem.numbering.get_ref(styles).as_ref() {
         let location = elem.location().unwrap();
         let numbering = Counter::of(HeadingElem::ELEM)
-            .display_at(engine, location, styles, numbering, span)?
+            .display_at(engine, location, styles, numbering, span, false)?
             .spanned(span);
         let align = styles.resolve(AlignElem::alignment);
 

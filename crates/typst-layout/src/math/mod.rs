@@ -211,7 +211,7 @@ pub fn layout_equation_block(
 
     let pod = Region::new(regions.base(), Axes::splat(false));
     let counter = Counter::of(EquationElem::ELEM)
-        .display_at(engine, elem.location().unwrap(), styles, numbering, span)?
+        .display_at(engine, elem.location().unwrap(), styles, numbering, span, false)?
         .spanned(span);
     let mut locator = locator.split();
     let number = crate::layout_frame(engine, &counter, locator.next(&()), styles, pod)?;

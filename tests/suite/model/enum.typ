@@ -112,7 +112,7 @@ a + 0.
   start: 3,
   spacing: 0.65em - 3pt,
   tight: false,
-  numbering: n => text(
+  numbering: (n, ..) => text(
     fill: (red, green, blue).at(calc.rem(n, 3)),
     numbering("A", n),
   ),
@@ -128,7 +128,7 @@ a + 0.
 
 --- enum-numbering-closure-nested paged ---
 // Test numbering with closure and nested lists.
-#set enum(numbering: n => super[#n])
+#set enum(numbering: (n, ..) => super[#n])
 + A
   + B
 + C
@@ -201,7 +201,7 @@ a + 0.
 #set align(center)
 #set enum(
   number-align: top,
-  numbering: n => "1" * n,
+  numbering: (n, ..) => "1" * n,
 )
 
 + abc

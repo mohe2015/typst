@@ -4,11 +4,11 @@ use std::str::FromStr;
 use codex::numeral_systems::{NamedNumeralSystem, RepresentationError};
 use comemo::Tracked;
 use ecow::{EcoString, EcoVec};
-use typst_syntax::Span;
+use typst_syntax::{Span, Spanned};
 
 use crate::diag::{At, SourceResult, StrResult, bail, warning};
 use crate::engine::Engine;
-use crate::foundations::{Context, Func, Str, Value, cast, func};
+use crate::foundations::{Arg, Args, Context, Func, Str, Value, cast, func};
 
 /// Applies a numbering to a sequence of numbers.
 ///
@@ -90,8 +90,12 @@ pub fn numbering(
     /// given, the last counting symbol with its prefix is repeated.
     #[variadic]
     numbers: Vec<u64>,
+
+    #[named]
+    #[default(false)]
+    trimmed: bool,
 ) -> SourceResult<Value> {
-    numbering.apply(engine, context, span, &numbers)
+    numbering.apply(engine, context, span, &numbers, trimmed)
 }
 
 /// How to number a sequence of things.
@@ -111,21 +115,30 @@ impl Numbering {
         context: Tracked<Context>,
         span: Span,
         numbers: &[u64],
+        trimmed: bool
     ) -> SourceResult<Value> {
         Ok(match self {
             Self::Pattern(pattern) => {
-                Value::Str(pattern.apply(Some((engine, span)), numbers).at(span)?.into())
+                Value::Str(pattern.apply(Some((engine, span)), numbers, trimmed).at(span)?.into())
             }
-            Self::Func(func) => func.call(engine, context, numbers.iter().copied())?,
+            Self::Func(func) => {
+                let mut args = Args {
+                    span,
+                    items: EcoVec::with_capacity(numbers.len()+1)
+                };
+                args.items.extend(numbers.iter().copied().map(|i| Arg {
+                    span,
+                    name: None,
+                    value: Spanned::new(Value::Int(i.try_into().unwrap()), span),
+                }));
+                args.items.push(Arg {
+                    span,
+                    name: Some(Str::from("trimmed")),
+                    value: Spanned::new(Value::Bool(trimmed), span),
+                });
+                func.call(engine, context, args)?
+            }
         })
-    }
-
-    /// Trim the prefix suffix if this is a pattern.
-    pub fn trimmed(mut self) -> Self {
-        if let Self::Pattern(pattern) = &mut self {
-            pattern.trimmed = true;
-        }
-        self
     }
 }
 
@@ -158,7 +171,6 @@ cast! {
 pub struct NumberingPattern {
     pub pieces: EcoVec<(EcoString, NamedNumeralSystem)>,
     pub suffix: EcoString,
-    trimmed: bool,
 }
 
 impl NumberingPattern {
@@ -171,13 +183,14 @@ impl NumberingPattern {
         &self,
         warning_context: Option<(&mut Engine, Span)>,
         numbers: &[u64],
+        trimmed: bool,
     ) -> StrResult<EcoString> {
         if let Some((engine, span)) = warning_context {
             self.apply_with(numbers, |system, n| {
                 Ok(apply_system_with_fallback(engine, span, system, n))
-            })
+            }, trimmed)
         } else {
-            self.apply_with(numbers, apply_system)
+            self.apply_with(numbers, apply_system, trimmed)
         }
     }
 
@@ -189,6 +202,7 @@ impl NumberingPattern {
         &self,
         numbers: &[u64],
         mut apply_system: impl FnMut(NamedNumeralSystem, u64) -> StrResult<D>,
+        trimmed: bool
     ) -> StrResult<EcoString> {
         let mut fmt = EcoString::new();
         let mut numbers = numbers.iter();
@@ -196,7 +210,7 @@ impl NumberingPattern {
         for (i, ((prefix, system), &n)) in
             self.pieces.iter().zip(&mut numbers).enumerate()
         {
-            if i > 0 || !self.trimmed {
+            if i > 0 || !trimmed {
                 fmt.push_str(prefix);
             }
             write!(fmt, "{}", apply_system(*system, n)?).unwrap();
@@ -212,7 +226,7 @@ impl NumberingPattern {
             write!(fmt, "{}", apply_system(*system, n)?).unwrap();
         }
 
-        if !self.trimmed {
+        if !trimmed {
             fmt.push_str(&self.suffix);
         }
 
@@ -313,7 +327,7 @@ impl FromStr for NumberingPattern {
             return Err("invalid numbering pattern");
         }
 
-        Ok(Self { pieces, suffix, trimmed: false })
+        Ok(Self { pieces, suffix })
     }
 }
 

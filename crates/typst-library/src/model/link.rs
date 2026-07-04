@@ -328,7 +328,7 @@ impl Destination {
                             NumberingPattern::from_str("1").unwrap().into()
                         });
                     let page_nr = Counter::new(CounterKey::Page)
-                        .display_at(engine, loc, styles, &numbering, span)?
+                        .display_at(engine, loc, styles, &numbering, span, false)?
                         .plain_text();
                     let page_str = PageElem::local_name_in(styles);
                     Ok(eco_format!("{page_str} {page_nr}"))
@@ -348,8 +348,9 @@ impl Destination {
                             engine,
                             loc,
                             styles,
-                            &numbering.clone().trimmed(),
+                            &numbering,
                             span,
+                            true,
                         )?;
                         return Ok(eco_format!("{supplement} {}", numbers.plain_text()));
                     } else {
