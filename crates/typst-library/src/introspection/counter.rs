@@ -646,7 +646,8 @@ impl CounterState {
         numbering: &Numbering,
         trimmed: bool,
     ) -> SourceResult<Value> {
-        numbering.apply_with_trimmed(engine, context, span, &self.0, trimmed)
+        let numbering = if trimmed { numbering.clone().trimmed() } else { numbering.clone() };
+        numbering.apply(engine, context, span, &self.0)
     }
 }
 

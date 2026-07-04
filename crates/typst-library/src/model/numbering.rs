@@ -112,43 +112,34 @@ impl Numbering {
         span: Span,
         numbers: &[u64],
     ) -> SourceResult<Value> {
-        self.apply_with_trimmed(engine, context, span, numbers, false)
-    }
-
-    /// Apply the pattern to the given numbers with optional trimming.
-    pub fn apply_with_trimmed(
-        &self,
-        engine: &mut Engine,
-        context: Tracked<Context>,
-        span: Span,
-        numbers: &[u64],
-        trimmed: bool,
-    ) -> SourceResult<Value> {
         Ok(match self {
             Self::Pattern(pattern) => {
-                let mut pattern = pattern.clone();
-                pattern.trimmed |= trimmed;
                 Value::Str(pattern.apply(Some((engine, span)), numbers).at(span)?.into())
-            }
-            Self::Func(func) if trimmed => {
-                let mut args = Args::new(span, numbers.iter().copied());
-                args.items.push(Arg {
-                    span,
-                    name: Some("trimmed".into()),
-                    value: Spanned::new(Value::Bool(true), span),
-                });
-                func.call(engine, context, args)?
             }
             Self::Func(func) => func.call(engine, context, numbers.iter().copied())?,
         })
     }
 
-    /// Trim the prefix suffix if this is a pattern.
-    pub fn trimmed(mut self) -> Self {
-        if let Self::Pattern(pattern) = &mut self {
-            pattern.trimmed = true;
+    /// Trim numbering affixes.
+    ///
+    /// For function-based numberings, this pre-applies `trimmed: true`.
+    pub fn trimmed(self) -> Self {
+        match self {
+            Self::Pattern(mut pattern) => {
+                pattern.trimmed = true;
+                Self::Pattern(pattern)
+            }
+            Self::Func(func) => {
+                let span = func.span();
+                let mut args = Args::new(span, std::iter::empty::<Value>());
+                args.items.push(Arg {
+                    span,
+                    name: Some("trimmed".into()),
+                    value: Spanned::new(Value::Bool(true), span),
+                });
+                Self::Func(func.with(&mut args))
+            }
         }
-        self
     }
 }
 
