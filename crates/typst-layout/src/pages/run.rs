@@ -165,6 +165,7 @@ fn layout_page_run_impl(
             Counter::new(CounterKey::Page),
             Smart::Custom(numbering.clone()),
             both,
+            false,
         )
         .pack();
 

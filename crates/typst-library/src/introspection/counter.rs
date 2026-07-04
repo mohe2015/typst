@@ -270,7 +270,7 @@ impl Counter {
         let context = Context::new(Some(loc), Some(styles));
         Ok(engine
             .introspect(CounterAtIntrospection(self.clone(), loc, span))?
-            .display(engine, context.track(), span, numbering)?
+            .display(engine, context.track(), span, numbering, false)?
             .display())
     }
 
@@ -384,7 +384,8 @@ impl Counter {
         /// to display the counter. If given a function, that function receives
         /// each number of the counter as a separate argument. If the amount of
         /// numbers varies, e.g. for the heading argument, you can use an
-        /// @arguments[argument sink].
+        /// @arguments[argument sink]. If `trimmed` is `{true}`, the function
+        /// additionally receives the named argument `trimmed: true`.
         ///
         /// If this is omitted or set to `{auto}`, displays the counter with the
         /// numbering style for the counted element or with the pattern
@@ -413,6 +414,13 @@ impl Counter {
         #[named]
         #[default(false)]
         both: bool,
+        /// Whether to trim numbering prefixes and suffixes.
+        ///
+        /// For numbering functions, this forwards `trimmed: true` as a named
+        /// argument to the user-supplied function.
+        #[named]
+        #[default(false)]
+        trimmed: bool,
     ) -> SourceResult<Value> {
         let location = match at {
             Smart::Auto => context.location().at(span)?,
@@ -435,9 +443,9 @@ impl Counter {
 
         if at.is_custom() {
             let context = Context::new(Some(location), context.styles().ok());
-            state.display(engine, context.track(), span, &numbering)
+            state.display(engine, context.track(), span, &numbering, trimmed)
         } else {
-            state.display(engine, context, span, &numbering)
+            state.display(engine, context, span, &numbering, trimmed)
         }
     }
 
@@ -636,8 +644,9 @@ impl CounterState {
         context: Tracked<Context>,
         span: Span,
         numbering: &Numbering,
+        trimmed: bool,
     ) -> SourceResult<Value> {
-        numbering.apply(engine, context, span, &self.0)
+        numbering.apply_with_trimmed(engine, context, span, &self.0, trimmed)
     }
 }
 
@@ -693,6 +702,11 @@ pub struct CounterDisplayElem {
     #[required]
     #[internal]
     both: bool,
+
+    /// Whether to trim numbering prefixes and suffixes.
+    #[required]
+    #[internal]
+    trimmed: bool,
 }
 
 impl Construct for CounterDisplayElem {
@@ -712,6 +726,7 @@ pub const COUNTER_DISPLAY_RULE: ShowFn<CounterDisplayElem> = |elem, engine, styl
             elem.numbering.clone(),
             Smart::Auto,
             elem.both,
+            elem.trimmed,
         )?
         .display())
 };

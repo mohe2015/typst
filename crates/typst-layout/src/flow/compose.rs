@@ -905,7 +905,7 @@ fn layout_line_number(
     // Combine counter update and display into the content we'll layout.
     let content = Content::sequence(vec![
         counter.clone().update(Span::detached(), update),
-        CounterDisplayElem::new(counter, numbering, false).pack(),
+        CounterDisplayElem::new(counter, numbering, false, false).pack(),
     ]);
     let content = content.artifact(ArtifactKind::LineNumber);
 

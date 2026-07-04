@@ -4,11 +4,11 @@ use std::str::FromStr;
 use codex::numeral_systems::{NamedNumeralSystem, RepresentationError};
 use comemo::Tracked;
 use ecow::{EcoString, EcoVec};
-use typst_syntax::Span;
+use typst_syntax::{Span, Spanned};
 
 use crate::diag::{At, SourceResult, StrResult, bail, warning};
 use crate::engine::Engine;
-use crate::foundations::{Context, Func, Str, Value, cast, func};
+use crate::foundations::{Arg, Args, Context, Func, Str, Value, cast, func};
 
 /// Applies a numbering to a sequence of numbers.
 ///
@@ -112,9 +112,32 @@ impl Numbering {
         span: Span,
         numbers: &[u64],
     ) -> SourceResult<Value> {
+        self.apply_with_trimmed(engine, context, span, numbers, false)
+    }
+
+    /// Apply the pattern to the given numbers with optional trimming.
+    pub fn apply_with_trimmed(
+        &self,
+        engine: &mut Engine,
+        context: Tracked<Context>,
+        span: Span,
+        numbers: &[u64],
+        trimmed: bool,
+    ) -> SourceResult<Value> {
         Ok(match self {
             Self::Pattern(pattern) => {
+                let mut pattern = pattern.clone();
+                pattern.trimmed |= trimmed;
                 Value::Str(pattern.apply(Some((engine, span)), numbers).at(span)?.into())
+            }
+            Self::Func(func) if trimmed => {
+                let mut args = Args::new(span, numbers.iter().copied());
+                args.items.push(Arg {
+                    span,
+                    name: Some("trimmed".into()),
+                    value: Spanned::new(Value::Bool(true), span),
+                });
+                func.call(engine, context, args)?
             }
             Self::Func(func) => func.call(engine, context, numbers.iter().copied())?,
         })
