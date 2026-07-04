@@ -118,6 +118,11 @@
 #test(numbering(f.with(trimmed: true), 1, trimmed: false), "(1)")
 #test(numbering(f.with(trimmed: true), 1, trimmed: true), "1")
 
+--- numbering-trimmed-func2 eval ---
+// Error: 1:58-1:71 assertion failed
+#let f(n, trimmed: false) = if trimmed { str(n) } else { assert(false) }
+#test(numbering(f, 1, trimmed: false), "(1)")
+
 --- enum-numbering-too-high paged ---
 #set enum(numbering: "⓵")
 // Warning: 1-9 the number 11 is too large to be represented with the `arabic.oo` numeral system

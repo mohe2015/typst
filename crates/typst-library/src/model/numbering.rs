@@ -6,9 +6,9 @@ use comemo::Tracked;
 use ecow::{EcoString, EcoVec};
 use typst_syntax::{Span, Spanned};
 
-use crate::diag::{At, SourceResult, StrResult, bail, warning};
+use crate::diag::{At, SourceResult, StrResult, Trace, Tracepoint, bail, warning};
 use crate::engine::Engine;
-use crate::foundations::{Arg, Args, Context, Func, Str, Value, cast, func};
+use crate::foundations::{Arg, Args, Context, Func, Repr, Str, Value, cast, func};
 
 /// Applies a numbering to a sequence of numbers.
 ///
@@ -80,7 +80,7 @@ pub fn numbering(
     /// particularly useful in itself, it means that you can just give arbitrary
     /// numberings to the `numbering` function without caring whether they are
     /// defined as a pattern or function.
-    numbering: Numbering,
+    numbering: Spanned<Numbering>,
     /// The numbers to apply the numbering to. Must be non-negative.
     ///
     /// In general, numbers are counted from one. A number of zero indicates
@@ -95,7 +95,7 @@ pub fn numbering(
     #[default(false)]
     trimmed: bool,
 ) -> SourceResult<Value> {
-    numbering.apply(engine, context, span, &numbers, trimmed)
+    numbering.v.apply(engine, context, numbering.span, &numbers, trimmed)
 }
 
 /// How to number a sequence of things.
@@ -144,7 +144,7 @@ impl Numbering {
                         hint: "add argument `(..)`, `(..rest)` or `(trimmed: false)`";
                     ));
                 }
-                func.call(engine, context, args)?
+                func.call(engine, context, args.clone()).trace(engine.world, || Tracepoint::Call(func.name().map(|s| EcoString::from(s) + "(.." + args.repr() + ")")), span)?
             }
         })
     }

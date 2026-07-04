@@ -249,6 +249,27 @@ fn test_tracepoints() {
 }
 
 #[test]
+fn test_tracepoints_numbering() {
+    let project = tempfs();
+    let main = project.write(
+        "main.typ",
+        r#"#let f(n, trimmed: true) = if trimmed { str(n) } else { assert(false) }
+           #set heading(numbering: f)
+           = Heading"#,
+    );
+    let output = exec().arg("compile").arg(&main).must_fail();
+    output
+        .stderr
+        .must_contain("error: assertion failed")
+        .must_contain("#let f(n, trimmed: true) = if trimmed { str(n) } else { assert(false) }");
+    output
+        .stderr
+        .must_contain("while calling `f(..arguments(1, trimmed: false))` at")
+        .must_contain("main.typ:3:11")
+        .must_contain("= Heading");
+}
+
+#[test]
 fn test_target_available() {
     let project = tempfs();
     let main = project.write("main.typ", "#context target()");

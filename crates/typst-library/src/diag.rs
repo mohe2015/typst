@@ -309,7 +309,7 @@ pub struct SourceDiagnostic {
     /// A diagnostic message describing the problem.
     pub message: EcoString,
     /// The trace of function calls leading to the problem.
-    pub trace: EcoVec<Spanned<Tracepoint>>,
+    pub trace: EcoVec<Spanned<Tracepoint>>, // here
     /// Additional hints to the user.
     ///
     /// - When the span is `None`, these are generic hints. The CLI renders them

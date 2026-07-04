@@ -27,7 +27,7 @@ pub struct Engine<'a> {
     /// Provides access to information about the document.
     pub introspector: Protected<Tracked<'a, dyn Introspector + 'a>>,
     /// May hold a span that is currently under inspection.
-    pub traced: Tracked<'a, Traced>,
+    pub traced: Tracked<'a, Traced>, // here
     /// A pure sink for warnings, delayed errors, and spans under inspection.
     pub sink: TrackedMut<'a, Sink>,
     /// The route the engine took during compilation. This is used to detect

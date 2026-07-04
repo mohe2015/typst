@@ -385,6 +385,7 @@ impl<'a> Runner<'a> {
 
     /// Evaluate document content, this is the target agnostic part of compilation.
     fn eval(&mut self) -> Warned<SourceResult<Content>> {
+        // infos?
         let evaluated = eval::eval(&self.world);
 
         let Warned { output, warnings } = &evaluated;
