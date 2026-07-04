@@ -3,7 +3,7 @@ use std::num::NonZeroUsize;
 use ecow::EcoString;
 use typst_utils::NonZeroExt;
 
-use crate::diag::SourceResult;
+use crate::diag::{SourceResult, Trace as _, Tracepoint};
 use crate::engine::Engine;
 use crate::foundations::{
     Content, NativeElement, Packed, ShowSet, Smart, StyleChain, Styles, Synthesize, elem,
@@ -263,7 +263,7 @@ impl Synthesize for Packed<HeadingElem> {
                 numbering,
                 self.span(),
                 false,
-            )
+            )//.trace(engine.world, || Tracepoint::Call(Some("while showing heading".into())), self.span())
         {
             self.numbers = Some(numbers.plain_text());
         }

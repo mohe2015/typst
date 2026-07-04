@@ -6,6 +6,7 @@ use comemo::Tracked;
 use ecow::{EcoString, EcoVec};
 use typst_syntax::{Span, Spanned};
 
+use crate::World;
 use crate::diag::{At, SourceResult, StrResult, Trace, Tracepoint, bail, warning};
 use crate::engine::Engine;
 use crate::foundations::{Arg, Args, Context, Func, Repr, Str, Value, cast, func};
@@ -55,7 +56,6 @@ use crate::foundations::{Arg, Args, Context, Func, Repr, Str, Value, cast, func}
 pub fn numbering(
     engine: &mut Engine,
     context: Tracked<Context>,
-    span: Span,
     /// Defines how the numbering works.
     ///
     /// *Counting symbols* are `1`, `a`, `A`, `i`, `I`, `α`, `Α`, `一`, `壹`,
@@ -144,7 +144,12 @@ impl Numbering {
                         hint: "add argument `(..)`, `(..rest)` or `(trimmed: false)`";
                     ));
                 }
-                func.call(engine, context, args.clone()).trace(engine.world, || Tracepoint::Call(func.name().map(|s| EcoString::from(s) + "(.." + args.repr() + ")")), span)?
+
+                // TODO do we need two traces here or add traces at some callers?
+
+                // TODO if func is named, use the name
+                let source = engine.world.source(func.span().id().unwrap()).unwrap().find(func.span()).unwrap().full_text();
+                func.call(engine, context, args.clone()).trace(engine.world, || Tracepoint::Call(Some(source.clone() + "(.." + args.repr() + ")")), span)?
             }
         })
     }
