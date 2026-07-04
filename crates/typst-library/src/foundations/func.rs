@@ -220,7 +220,7 @@ impl Func {
             FuncInner::Plugin(_) => {
                 Either::Right(Either::Right([ParamInfo::Plugin].into_iter()))
             }
-            // TODO: We could take into account the known arguments.
+            // TODO: We could take into account the known arguments. TODO
             FuncInner::With(with) => with.0.params(),
         }
     }

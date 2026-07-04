@@ -131,11 +131,19 @@ impl Numbering {
                     name: None,
                     value: Spanned::new(Value::Int(i.try_into().unwrap()), span),
                 }));
-                args.items.push(Arg {
-                    span,
-                    name: Some(Str::from("trimmed")),
-                    value: Spanned::new(Value::Bool(trimmed), span),
-                });
+                 if func.params().any(|p| p.variadic() || (p.named() && p.name() == Some("trimmed"))) {
+                    args.items.push(Arg {
+                        span,
+                        name: Some(Str::from("trimmed")),
+                        value: Spanned::new(Value::Bool(trimmed), span),
+                    });
+                } else {
+                    engine.sink.warn(warning!(
+                        func.span(),
+                        "Function should support named argument called `trimmed` for future-proofness.";
+                        hint: "add argument `(..)`, `(..rest)` or `(trimmed: false)`";
+                    ));
+                }
                 func.call(engine, context, args)?
             }
         })

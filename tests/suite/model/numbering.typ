@@ -107,10 +107,16 @@
 #numbering("①", 51)
 
 --- numbering-trimmed-func eval ---
-// TODO annotate
 #let f(n, trimmed: false) = if trimmed { str(n) } else { "(" + str(n) + ")" }
 #test(numbering(f, 1), "(1)")
-#test(numbering(f, 1, trimmed: true), "1") // broken
+#test(numbering(f, 1, trimmed: false), "(1)")
+#test(numbering(f, 1, trimmed: true), "1")
+#test(numbering(f.with(trimmed: false), 1), "(1)")
+#test(numbering(f.with(trimmed: true), 1), "1a")
+#test(numbering(f.with(trimmed: false), 1, trimmed: false), "(1)")
+#test(numbering(f.with(trimmed: false), 1, trimmed: true), "1")
+#test(numbering(f.with(trimmed: true), 1, trimmed: false), "(1)")
+#test(numbering(f.with(trimmed: true), 1, trimmed: true), "1")
 
 --- enum-numbering-too-high paged ---
 #set enum(numbering: "⓵")
