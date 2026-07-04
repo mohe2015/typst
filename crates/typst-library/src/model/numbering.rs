@@ -81,6 +81,13 @@ pub fn numbering(
     /// numberings to the `numbering` function without caring whether they are
     /// defined as a pattern or function.
     numbering: Numbering,
+    /// Whether to trim numbering affixes.
+    ///
+    /// For numbering functions, this forwards `trimmed: true` as a named
+    /// argument to the user-supplied function.
+    #[named]
+    #[default(false)]
+    trimmed: bool,
     /// The numbers to apply the numbering to. Must be non-negative.
     ///
     /// In general, numbers are counted from one. A number of zero indicates
@@ -91,6 +98,7 @@ pub fn numbering(
     #[variadic]
     numbers: Vec<u64>,
 ) -> SourceResult<Value> {
+    let numbering = if trimmed { numbering.trimmed() } else { numbering };
     numbering.apply(engine, context, span, &numbers)
 }
 
