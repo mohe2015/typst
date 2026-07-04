@@ -56,6 +56,7 @@ use crate::foundations::{Arg, Args, Context, Func, Repr, Str, Value, cast, func}
 pub fn numbering(
     engine: &mut Engine,
     context: Tracked<Context>,
+    span: Span,
     /// Defines how the numbering works.
     ///
     /// *Counting symbols* are `1`, `a`, `A`, `i`, `I`, `α`, `Α`, `一`, `壹`,
@@ -95,12 +96,12 @@ pub fn numbering(
     #[default(false)]
     trimmed: bool,
 ) -> SourceResult<Value> {
-    numbering.v.apply(engine, context, numbering.span, &numbers, trimmed)
+    numbering.v.apply(engine, context, span, &numbers, trimmed)
 }
 
 /// How to number a sequence of things.
 #[derive(Debug, Clone, PartialEq, Hash)]
-pub enum Numbering {
+pub enum Numbering { // TODO store definition place
     /// A pattern with prefix, numbering, lower / upper case and suffix.
     Pattern(NumberingPattern),
     /// A closure mapping from an item's number to content.
@@ -145,11 +146,8 @@ impl Numbering {
                     ));
                 }
 
-                // TODO do we need two traces here or add traces at some callers?
-
-                // TODO if func is named, use the name
-                let source = engine.world.source(func.span().id().unwrap()).unwrap().find(func.span()).unwrap().full_text();
-                func.call(engine, context, args.clone()).trace(engine.world, || Tracepoint::Call(Some(source.clone() + "(.." + args.repr() + ")")), span)?
+                //let function_span = engine.world.source(func.span().id().unwrap()).unwrap().find(func.span());
+                func.call(engine, context, args.clone()).trace(engine.world, || Tracepoint::CallWithArgs(args.repr()), func.span())?
             }
         })
     }

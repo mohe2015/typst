@@ -263,7 +263,7 @@ impl Synthesize for Packed<HeadingElem> {
                 numbering,
                 self.span(),
                 false,
-            )//.trace(engine.world, || Tracepoint::Call(Some("while showing heading".into())), self.span())
+            ).trace(engine.world, || Tracepoint::Show("while showing heading".into()), self.span())
         {
             self.numbers = Some(numbers.plain_text());
         }

@@ -23,6 +23,7 @@ use typst_syntax::{
 use utf8_iter::ErrorReportingUtf8Chars;
 
 use crate::engine::Engine;
+use crate::foundations::{Args, Repr};
 use crate::loading::{LoadSource, Loaded};
 use crate::{World, WorldExt};
 
@@ -429,9 +430,12 @@ impl WarningSink for (&mut Engine<'_>, Span) {
 
 /// A part of a diagnostic's [trace](SourceDiagnostic::trace).
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[non_exhaustive]
 pub enum Tracepoint {
     /// A function call.
     Call(Option<EcoString>),
+    /// A function call with args.
+    CallWithArgs(EcoString),
     /// A show rule application.
     Show(EcoString),
     /// A module import.
@@ -445,6 +449,7 @@ impl Display for Tracepoint {
         match self {
             Tracepoint::Call(Some(name)) => write!(f, "while calling `{name}`"),
             Tracepoint::Call(None) => write!(f, "while calling function"),
+            Tracepoint::CallWithArgs(args) => write!(f, "while calling this function with {}", args),
             Tracepoint::Show(name) => write!(f, "while showing {name} element"),
             Tracepoint::Import(name) => write!(f, "while importing `{name}`"),
             Tracepoint::Include(name) => write!(f, "while including `{name}`"),
@@ -474,7 +479,7 @@ impl<T> Trace<T> for SourceResult<T> {
                     && trace_range.start <= error_range.start
                     && trace_range.end >= error_range.end
                 {
-                    continue;
+                    //continue;
                 }
 
                 error.trace.push(Spanned::new(make_point(), span));
